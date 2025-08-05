@@ -1,14 +1,21 @@
-import './assets/main.css'
+import './assets/main.css';
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+// https://vuejs.org/
+import { createApp } from 'vue';
 
-import App from './App.vue'
-import router from './router'
+// https://pinia.vuejs.org/
+import { createPinia } from 'pinia';
 
-const app = createApp(App)
+// https://tanstack.com/query/latest/docs/framework
+import { VueQueryPlugin } from '@tanstack/vue-query';
 
-app.use(createPinia())
-app.use(router)
+import App from './App.vue';
+import router from './router';
 
-app.mount('#app')
+const app = createApp(App);
+
+app.use(createPinia());
+app.use(router);
+app.use(VueQueryPlugin);
+
+app.mount('#app');
