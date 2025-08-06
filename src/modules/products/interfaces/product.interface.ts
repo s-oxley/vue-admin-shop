@@ -1,8 +1,8 @@
-// export interface Product {
-//   count: number;
-//   pages: number;
-//   products: Product[];
-// }
+export interface Products {
+  count: number;
+  pages: number;
+  products: Product[];
+}
 
 import type { User } from '@/modules/auth/interfaces/user.interface';
 

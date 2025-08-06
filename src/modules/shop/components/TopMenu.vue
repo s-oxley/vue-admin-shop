@@ -17,7 +17,7 @@
           />
         </svg>
 
-        <span class="self-center whitespace-nowrap text-xl font-semibold">Termcode</span>
+        <span class="self-center whitespace-nowrap text-xl font-semibold">Teamcode</span>
       </a>
       <div class="mt-2 sm:mt-0 sm:flex md:order-2">
         <!-- Login Button -->
