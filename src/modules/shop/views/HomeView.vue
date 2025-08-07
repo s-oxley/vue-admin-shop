@@ -96,7 +96,11 @@
   </div>
   <div v-else>
     <ProductList :products="products" />
-    <ButtonPagination />
+    <ButtonPagination
+      :page="page"
+      :is-first-page="page === 1"
+      :is-last-page="!!products && products.length < LIMIT"
+    />
   </div>
 </template>
 
@@ -105,12 +109,25 @@ import ButtonPagination from '@/modules/common/components/ButtonPagination.vue';
 import { getProductsAction } from '@/modules/products/actions';
 import ProductList from '@/modules/products/components/ProductList.vue';
 import { useQuery } from '@tanstack/vue-query';
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
+const LIMIT: number = 8;
+const route = useRoute();
+const page = ref(Number(route.query.page) || 1);
 
 const { data: products, isLoading } = useQuery({
-  queryKey: ['products', { page: 1, limit: 10 }],
-  queryFn: () => getProductsAction(),
+  queryKey: ['products', { page: page, limit: LIMIT }],
+  queryFn: () => getProductsAction(page.value, LIMIT),
   staleTime: 60 * 1000,
 });
+
+watch(
+  () => route.query.page,
+  (newPage) => {
+    page.value = Number(newPage || 1);
+  },
+);
 
 // console.log(products);
 // console.log(isLoading);
