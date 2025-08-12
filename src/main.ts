@@ -9,6 +9,10 @@ import { createPinia } from 'pinia';
 // https://tanstack.com/query/latest/docs/framework
 import { VueQueryPlugin } from '@tanstack/vue-query';
 
+// https://github.com/Maronato/vue-toastification/tree/next
+import Toast from 'vue-toastification';
+import 'vue-toastification/dist/index.css';
+
 import App from './App.vue';
 import router from './router';
 
@@ -17,5 +21,6 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(VueQueryPlugin);
+app.use(Toast);
 
 app.mount('#app');
