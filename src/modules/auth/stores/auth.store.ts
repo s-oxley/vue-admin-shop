@@ -1,14 +1,33 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import type { User } from '../interfaces/user.interface';
-import { AuthStatus } from '../interfaces';
-import { loginAction } from '../actions';
+import { AuthStatus, type RegisterError, type RegisterSuccess } from '../interfaces';
+import { loginAction, registerAction } from '../actions';
 import { useLocalStorage } from '@vueuse/core';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | undefined>();
   const token = ref(useLocalStorage('token', ''));
   const authStatus = ref<AuthStatus>(AuthStatus.Checking);
+
+  const register = async (
+    email: string,
+    password: string,
+    fullName: string,
+  ): Promise<RegisterSuccess | RegisterError | null> => {
+    try {
+      const registerResponse = await registerAction(email, password, fullName);
+
+      if (!registerResponse.ok) {
+        return registerResponse;
+      }
+      setInformationAuthenticated(registerResponse.user, registerResponse.token);
+      return registerResponse;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -18,14 +37,18 @@ export const useAuthStore = defineStore('auth', () => {
         return logout();
       }
 
-      user.value = loginResponse.user;
-      token.value = loginResponse.token;
-      authStatus.value = AuthStatus.Authenticated;
+      setInformationAuthenticated(loginResponse.user, loginResponse.token);
       return true;
     } catch (e) {
       console.error(e);
       return logout();
     }
+  };
+
+  const setInformationAuthenticated = (userResponse: User, tokenResponse: string) => {
+    user.value = userResponse;
+    token.value = tokenResponse;
+    authStatus.value = AuthStatus.Authenticated;
   };
 
   const logout = () => {
@@ -48,5 +71,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Actions
     login,
+    register,
   };
 });
