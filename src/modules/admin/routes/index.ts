@@ -1,10 +1,11 @@
 import type { RouteRecordRaw } from 'vue-router';
 import isAdminGuard from '../guards/is-admin.guard';
+import isAuthenticatedGuard from '@/modules/auth/guards/is-authenticated.guard';
 
 export const adminRoutes: RouteRecordRaw = {
   path: '/admin',
   name: 'administration',
-  beforeEnter: [isAdminGuard],
+  beforeEnter: [isAuthenticatedGuard, isAdminGuard],
   component: () => import('@/modules/admin/layouts/AdminLayout.vue'),
   // children: [
   //   {
