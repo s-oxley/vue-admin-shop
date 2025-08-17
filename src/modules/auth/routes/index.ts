@@ -3,7 +3,7 @@ import isNotAuthenticatedGuard from '../guards/is-not-authenticated.guard';
 
 export const authRoutes: RouteRecordRaw = {
   path: '/auth',
-  name: '/auth',
+  name: 'auth',
   beforeEnter: [isNotAuthenticatedGuard],
   component: () => import('@/modules/auth/layouts/AuthLayout.vue'),
   children: [
