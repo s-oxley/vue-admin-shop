@@ -1,11 +1,13 @@
 import { useFieldArray, useForm } from 'vee-validate';
 import * as yup from 'yup';
 import { getProductById } from '@/modules/products/actions/get-product-by-id.action';
-import { useQuery } from '@tanstack/vue-query';
+import { useMutation, useQuery } from '@tanstack/vue-query';
 import { defineComponent, watch, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import CustomInput from '@/modules/common/components/CustomInput.vue';
 import CustomTextArea from '@/modules/common/components/CustomTextArea.vue';
+import { createUpdateProductAction } from '@/modules/products/actions';
+import { useToast } from 'vue-toastification';
 
 // https://vee-validate.logaretm.com/v4/guide/composition-api/getting-started/
 // https://zod.dev/
@@ -38,6 +40,7 @@ export default defineComponent({
   setup(props) {
     // console.log(`props.productId: ${props.productId}`);
     const router = useRouter();
+    const toast = useToast();
 
     const {
       data: product,
@@ -47,6 +50,15 @@ export default defineComponent({
       queryKey: ['products', props.productId],
       queryFn: () => getProductById(props.productId),
       retry: false,
+    });
+
+    const {
+      isPending,
+      isSuccess: isUpdateSuccess,
+      data: updateProduct,
+      mutate: createUpdateProduct,
+    } = useMutation({
+      mutationFn: createUpdateProductAction,
     });
 
     const { values, errors, defineField, handleSubmit, resetForm, meta } = useForm({
@@ -67,8 +79,9 @@ export default defineComponent({
       push: addSize,
     } = useFieldArray<string>('sizes');
 
-    const onSubmit = handleSubmit((values) => {
+    const onSubmit = handleSubmit(async (values) => {
       console.log(values);
+      createUpdateProduct(values);
     });
 
     const hasSize = (size: string) => {
@@ -105,6 +118,14 @@ export default defineComponent({
       { deep: true, immediate: true },
     );
 
+    watch(isUpdateSuccess, (isSuccess) => {
+      if (isSuccess) {
+        toast.success('Producto actualizado correctamente');
+        resetForm({ values: updateProduct.value });
+        // router.replace({ name: 'admin-products' });
+      }
+    });
+
     return {
       // properties
       product,
@@ -127,6 +148,8 @@ export default defineComponent({
 
       imagesField,
       sizesField,
+
+      isPending,
 
       // getters
       allSizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'],
