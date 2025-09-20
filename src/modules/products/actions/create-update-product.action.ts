@@ -2,6 +2,9 @@ import { tesloApi } from '@/api/tesloApi';
 import type { Product } from '../interfaces/product.interface';
 
 export const createUpdateProductAction = async (product: Partial<Product>) => {
+  const newImages = await uploadImages(product.images ?? []);
+  product.images = newImages;
+
   if (product.id && product.id !== '') {
     // update product
     return await updateProduct(product);
@@ -51,4 +54,24 @@ const prepareProduct = (product: Partial<Product>) => {
   product.images = images;
 
   return product;
+};
+
+const uploadImages = async (images: (string | File)[]) => {
+  const filesToUpload = images.filter((img) => img instanceof File) as File[];
+  const filesCurrentImages = images.filter((img) => typeof img === 'string') as string[];
+
+  const uploadPromises = filesToUpload.map(async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const { data } = await tesloApi.post<{ secure_url: string }>('/files/product', formData);
+      return data.secure_url;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error uploading images');
+    }
+  });
+
+  const uploadedImages = await Promise.all(uploadPromises);
+  return [...uploadedImages, ...filesCurrentImages];
 };

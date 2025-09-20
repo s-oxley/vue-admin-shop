@@ -2,7 +2,7 @@ import { useFieldArray, useForm } from 'vee-validate';
 import * as yup from 'yup';
 import { getProductById } from '@/modules/products/actions/get-product-by-id.action';
 import { useMutation, useQuery } from '@tanstack/vue-query';
-import { defineComponent, watch, watchEffect } from 'vue';
+import { defineComponent, watch, watchEffect, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import CustomInput from '@/modules/common/components/CustomInput.vue';
 import CustomTextArea from '@/modules/common/components/CustomTextArea.vue';
@@ -80,9 +80,15 @@ export default defineComponent({
       push: addSize,
     } = useFieldArray<string>('sizes');
 
+    const imageFiles = ref<File[]>([]);
+
     const onSubmit = handleSubmit(async (values) => {
-      console.log(values);
-      createUpdateProduct(values);
+      // console.log(values);
+      const formProduct = {
+        ...values,
+        images: [...values.images, ...imageFiles.value],
+      };
+      createUpdateProduct(formProduct);
     });
 
     const hasSize = (size: string) => {
@@ -100,6 +106,22 @@ export default defineComponent({
       } else {
         addSize(size);
       }
+    };
+
+    const onFileChanged = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const files = target.files as FileList;
+
+      if (!files) return;
+      if (files.length === 0) return;
+
+      for (const file of files) {
+        imageFiles.value.push(file);
+      }
+    };
+
+    const temporalImageURI = (image: File) => {
+      return URL.createObjectURL(image);
     };
 
     watchEffect(() => {
@@ -123,6 +145,7 @@ export default defineComponent({
       if (isSuccess) {
         toast.success('Producto actualizado correctamente');
         resetForm({ values: updateProduct.value });
+        imageFiles.value = [];
         router.replace(`/admin/products/${updateProduct.value!.id}`);
       }
     });
@@ -157,6 +180,7 @@ export default defineComponent({
 
       imagesField,
       sizesField,
+      imageFiles,
 
       isPending,
 
@@ -167,6 +191,8 @@ export default defineComponent({
       onSubmit,
       toggleSize,
       hasSize,
+      onFileChanged,
+      temporalImageURI,
     };
   },
 });
